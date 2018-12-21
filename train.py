@@ -1,4 +1,5 @@
 import os
+import sys
 import keras
 import numpy as np
 import cv2
@@ -10,14 +11,42 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Model
 from keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense, Input
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Adam
 from keras.utils import plot_model
+from keras.callbacks import ModelCheckpoint
+
+def multi_generator(generator1, generator2, generator3, generator4, generator5, generator6, generator7, generator8):
+    while True:
+        for (x1,y1),(x2,y2),(x3,y3),(x4,y4),(x5,y5),(x6,y6),(x7,y7),(x8,y8) in zip(generator1, generator2, generator3, generator4, generator5, generator6, generator7, generator8):
+            yield ([x1,x2,x3,x4,x5,x6,x7,x8],y1)
+
+def plot_history(history):
+    # Plot training & validation accuracy values
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.savefig(file_name + '_acc.png')
+
+    # Plot training & validation loss values
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.savefig(file_name + '_loss.png')
+
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+file_name = os.path.basename(sys.argv[0]).split('.')[0]
 
 batch_size = 8
-epochs = 10
+epochs = 100
 
-nb_train_samples = 1354
-nb_test_samples = 341
+nb_train_samples = 167
+nb_test_samples = 42
 
 train_datagen = ImageDataGenerator()
 test_datagen = ImageDataGenerator()
@@ -74,18 +103,20 @@ output = Dense(2, activation='softmax')(y)
 model = Model(input, output)
 plot_model(model, to_file='model.png')
 
-model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
+adam = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+
+checkpoint = ModelCheckpoint(filepath=file_name+'_best_weights.h5', monitor='val_acc', verbose=1, save_best_only=True)
+callbacks = [checkpoint]
 
 history_ft = model.fit_generator(
-    [cam1_train_generator, cam2_train_generator, cam3_train_generator, cam4_train_generator, cam5_train_generator, cam6_train_generator, cam7_train_generator, cam8_train_generator]
+    multi_generator(cam1_train_generator, cam2_train_generator, cam3_train_generator, cam4_train_generator, cam5_train_generator, cam6_train_generator, cam7_train_generator, cam8_train_generator),
     steps_per_epoch=nb_train_samples // batch_size,
     epochs=epochs,
-    validation_data=[cam1_test_generator, cam2_test_generator, cam3_test_generator, cam4_test_generator, cam5_test_generator, cam6_test_generator, cam7_test_generator, cam8_test_generator],
-    validation_steps=nb_test_samples // batch_size
+    validation_data=multi_generator(cam1_test_generator, cam2_test_generator, cam3_test_generator, cam4_test_generator, cam5_test_generator, cam6_test_generator, cam7_test_generator, cam8_test_generator),
+    validation_steps=nb_test_samples // batch_size,
+    callbacks=callbacks
 )
 
 model.save_weights(file_name + '_weights.h5')
 plot_history(history_ft)
-
-
-
