@@ -101,7 +101,7 @@ y = GlobalAveragePooling2D()(y)
 output = Dense(2, activation='softmax')(y)
 
 model = Model(input, output)
-model.load_weights('./saved_model/train_weights.h5')
+model.load_weights('./saved_model/train_154546363969_best_weights.h5')
 
 model_slaves = []
 for i in range(8):
