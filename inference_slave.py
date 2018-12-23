@@ -17,7 +17,7 @@ batch_size = 1
 train_datagen = ImageDataGenerator()
 test_datagen = ImageDataGenerator()
 
-dynamic_image_path = '/data3/dingqianggang/Big_Data/local/datasets/Dynamic_Image'
+dynamic_image_path = 'datasets/Dynamic_Image'
 slave_index = int(sys.argv[1])
 
 cam_train_path = os.path.join(dynamic_image_path, 'cam{}'.format(slave_index+1), 'train')
@@ -33,19 +33,20 @@ model_slave.load_weights('./saved_model/model_slave{}.h'.format(slave_index))
 pos = 0
 time0 = time()
 for (x, y) in cam_test_generator:
-    print(x.shape)
     result_mid = model_slave.predict(x)
     '''
     while(time() - time0 < 1.0):
         pass
     '''
     time0 = time()
-    np.save('./output_cache/featuremap_{0}_{1}'.format(slave_index, pos), result_mid)
+    file_name = './output_cache/featuremap_{0}_{1}'.format(slave_index, pos)
+    np.save(file_name, result_mid)
+    os.system( "scp %s 219.223.190.251:/data3/dingqianggang/Big_Data/local/output_cache" % (file_name+'.npy') )
     pos += 1
     if pos == 41:
         break
 
 # from IPython import embed
-# embed() 
+# embed()
 
 

@@ -23,7 +23,7 @@ model_master.load_weights('./saved_model/model_master.h')
 # for i in range(8):
 #     input.append(Input(shape=(224, 224, 3)))
 #     y_bottom.append(ResNet18_bottom(i, input_tensor=input[i]))
-    
+
 # y = ResNet18_top(x=y_bottom)
 # y = GlobalAveragePooling2D()(y)
 # output = Dense(2, activation='softmax')(y)
@@ -51,9 +51,9 @@ while(True):
 	# print(result[0])
 
 	if np.argmax(result[0]) == 1:
-		print("{}s fall".format(pos))
-	else:
 		print("{}s other".format(pos))
+	else:
+		print("{}s fall".format(pos))
 
 
 
