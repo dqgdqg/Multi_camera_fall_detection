@@ -50,14 +50,17 @@ tf.app.flags.DEFINE_string('optimizer', 'adam', 'adam / sgd / rmsprop')
 tf.app.flags.DEFINE_string('gpu', '1', '0 / 1 / 2 / 3')
 tf.app.flags.DEFINE_float('learning_rate', 0.0001, 'default: 0.0001')
 tf.app.flags.DEFINE_string('log_dir', 'default', 'tensorboard log dir, default: default')
+tf.app.flags.DEFINE_integer('batch_size', 8, 'batch_size, default: 8')
+tf.app.flags.DEFINE_integer('epochs', 100, 'epochs, default: 100')
+tf.app.flags.DEFINE_string('pooling', 'Average', 'pooling method, default: Average')
 
 flags = tf.app.flags.FLAGS
 
 os.environ["CUDA_VISIBLE_DEVICES"] = flags.gpu
 file_name = os.path.basename(sys.argv[0]).split('.')[0] + '_' + str(int(time.time()*100))
 
-batch_size = 8
-epochs = 100
+batch_size = flags.batch_size
+epochs = flags.epochs
 
 nb_train_samples = 165
 nb_test_samples = 41
@@ -65,7 +68,7 @@ nb_test_samples = 41
 train_datagen = ImageDataGenerator()
 test_datagen = ImageDataGenerator()
 
-dynamic_image_path = '/data3/dingqianggang/Big_Data/local/datasets/Dynamic_Image'
+dynamic_image_path = './datasets/Dynamic_Image'
 
 cam1_train_path = os.path.join(dynamic_image_path, 'cam1', 'train')
 cam2_train_path = os.path.join(dynamic_image_path, 'cam2', 'train')
@@ -85,23 +88,23 @@ cam6_test_path = os.path.join(dynamic_image_path, 'cam6', 'test')
 cam7_test_path = os.path.join(dynamic_image_path, 'cam7', 'test')
 cam8_test_path = os.path.join(dynamic_image_path, 'cam8', 'test')
 
-cam1_train_generator = train_datagen.flow_from_directory(cam1_train_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam2_train_generator = train_datagen.flow_from_directory(cam2_train_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam3_train_generator = train_datagen.flow_from_directory(cam3_train_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam4_train_generator = train_datagen.flow_from_directory(cam4_train_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam5_train_generator = train_datagen.flow_from_directory(cam5_train_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam6_train_generator = train_datagen.flow_from_directory(cam6_train_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam7_train_generator = train_datagen.flow_from_directory(cam7_train_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam8_train_generator = train_datagen.flow_from_directory(cam8_train_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
+cam1_train_generator = train_datagen.flow_from_directory(cam1_train_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam2_train_generator = train_datagen.flow_from_directory(cam2_train_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam3_train_generator = train_datagen.flow_from_directory(cam3_train_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam4_train_generator = train_datagen.flow_from_directory(cam4_train_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam5_train_generator = train_datagen.flow_from_directory(cam5_train_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam6_train_generator = train_datagen.flow_from_directory(cam6_train_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam7_train_generator = train_datagen.flow_from_directory(cam7_train_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam8_train_generator = train_datagen.flow_from_directory(cam8_train_path, target_size=(224, 224), batch_size=batch_size, seed=123)
 
-cam1_test_generator = test_datagen.flow_from_directory(cam1_test_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam2_test_generator = test_datagen.flow_from_directory(cam2_test_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam3_test_generator = test_datagen.flow_from_directory(cam3_test_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam4_test_generator = test_datagen.flow_from_directory(cam4_test_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam5_test_generator = test_datagen.flow_from_directory(cam5_test_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam6_test_generator = test_datagen.flow_from_directory(cam6_test_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam7_test_generator = test_datagen.flow_from_directory(cam7_test_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
-cam8_test_generator = test_datagen.flow_from_directory(cam8_test_path, target_size=(224, 224), batch_size=batch_size, shuffle=False)
+cam1_test_generator = test_datagen.flow_from_directory(cam1_test_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam2_test_generator = test_datagen.flow_from_directory(cam2_test_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam3_test_generator = test_datagen.flow_from_directory(cam3_test_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam4_test_generator = test_datagen.flow_from_directory(cam4_test_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam5_test_generator = test_datagen.flow_from_directory(cam5_test_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam6_test_generator = test_datagen.flow_from_directory(cam6_test_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam7_test_generator = test_datagen.flow_from_directory(cam7_test_path, target_size=(224, 224), batch_size=batch_size, seed=123)
+cam8_test_generator = test_datagen.flow_from_directory(cam8_test_path, target_size=(224, 224), batch_size=batch_size, seed=123)
 '''
 fw = open('gen_filenames.txt','w')
 
@@ -121,7 +124,7 @@ for i in range(8):
     input.append(Input(shape=(224, 224, 3)))
     y_bottom.append(ResNet18_bottom(i, input_tensor=input[i]))
 
-y = ResNet18_top(x=y_bottom)
+y = ResNet18_top(x=y_bottom, pooling=flags.pooling)
 y = GlobalAveragePooling2D()(y)
 output = Dense(2, activation='softmax')(y)
 
