@@ -1,6 +1,9 @@
-import os
+import socket
 import sys
+import struct
 import numpy as np
+
+import os
 import tensorflow as tf
 
 from time import time
@@ -11,6 +14,7 @@ from keras.models import Model
 from keras.layers import Input
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ''
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 batch_size = 1
 
@@ -30,23 +34,38 @@ y_mid = ResNet18_bottom(slave_index, input_tensor=input_slave)
 model_slave = Model(input_slave, y_mid)
 model_slave.load_weights('./saved_model/model_slave{}.h'.format(slave_index))
 
-pos = 0
 time0 = time()
-for (x, y) in cam_test_generator:
+
+def inference_slave(x, pos):
     result_mid = model_slave.predict(x)
-    '''
-    while(time() - time0 < 1.0):
-        pass
-    '''
-    time0 = time()
-    file_name = './output_cache/featuremap_{0}_{1}'.format(slave_index, pos)
-    np.save(file_name, result_mid)
-    os.system( "scp %s 219.223.190.251:/data3/dingqianggang/Big_Data/local/output_cache" % (file_name+'.npy') )
-    pos += 1
-    if pos == 41:
-        break
+    file_name = 'featuremap_{0}_{1}'.format(slave_index, pos)
+    return file_name, result_mid
 
-# from IPython import embed
-# embed()
+def socket_client():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Master ip and port *******************************
+        s.connect(('219.223.190.251', 22348))
+        # **************************************************
+    except socket.error as msg:
+        print(msg)
+        sys.exit(1)
+    print(s.recv(1024).decode('utf-8'))
+
+    pos = 0
+    for (x, y) in cam_test_generator:
+        # *************************************************************
+        filename, data = inference_slave(x, pos)
+        # *************************************************************
+        fhead = struct.pack("128sl",filename.encode('utf-8'),sys.getsizeof(data))
+        s.send(fhead)
+        s.sendall(data)
+        pos += 1
+        if pos == 41:
+            break
+        
+    s.close()
 
 
+if __name__ == '__main__':
+    socket_client()
